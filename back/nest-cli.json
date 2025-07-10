@@ -1,0 +1,15 @@
+{
+  "collection": "@nestjs/schematics",
+  "sourceRoot": "src",
+  "compilerOptions": {
+    "watchAssets": true,
+    "assets": [
+      "**/*.html",
+      "**/*.hbs",        
+      "**/*.json",      
+      "**/*.graphql",    
+      "i18n/**/*"    
+    ]
+  },
+  "watch": ["src/**/*.ts"]
+}
