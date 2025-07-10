@@ -1,0 +1,60 @@
+version: '3.8'
+services:
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: mydb
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypassword
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  backend:
+    build:
+      context: .           # el context es el root, así incluye back/
+      dockerfile: Dockerfile.back
+    volumes:
+      - uploads-data:/app/uploads   
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USERNAME: myuser
+      DB_PASSWORD: mypassword
+      DB_NAME: mydb
+      STRIPE_API_KEY: sk_test...
+      STRIPE_WEBHOOK_SECRET: whsec...
+    env_file:
+      - ./back/.env
+    depends_on:
+      - postgres
+    ports:
+      - "3000:3000"
+
+  frontend:
+    build:
+      context: .           # el context es el root, así incluye front/
+      dockerfile: Dockerfile.front
+    env_file:
+      - ./front/.env
+    depends_on:
+      - backend
+    ports:
+      - "5173:80"
+
+  stripe:
+    image: stripe/stripe-cli:latest
+    container_name: stripe-cli
+    env_file:
+      - ./back/.env
+    command:
+      - listen
+      - --api-key=sk_test_...
+      - --forward-to=http://backend:3000/pagos/webhook
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:
+  uploads-data:

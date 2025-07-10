@@ -1,0 +1,25 @@
+# Etapa de build
+FROM node:18 AS builder
+WORKDIR /app
+
+# 1) Instala dependencias y build
+COPY back/package*.json ./
+RUN npm install
+COPY back .
+RUN npm run build
+
+# Etapa de producción
+FROM node:18
+WORKDIR /app
+
+# 2) Copia el build y package.json
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/package*.json ./
+
+# 3) Copia las imágenes seed que tienes en back/uploads
+COPY back/uploads ./uploads
+
+# 4) Instala deps de prod y arranca
+RUN npm install --only=production
+EXPOSE 3000
+CMD ["node", "dist/main"]
