@@ -13,11 +13,9 @@ Esta documentación cubre el flujo completo de la aplicación: creación, edici�
 5. [Entornos y variables de configuración](#entornos-y-variables-de-configuración)
 6. [Instalación y ejecución local](#instalación-y-ejecución-local)
 7. [Despliegue con Docker](#despliegue-con-docker)
-8. [Detalles de la API](#detalles-de-la-api)
-9. [Flujo de Stripe y webhook](#flujo-de-stripe-y-webhook)
-10. [Comandos disponibles](#comandos-disponibles)
-11. [Testing](#testing)
-12. [Licencia](#licencia)
+8. [Flujo General de la app](#flujo-General-de-la-app)
+9. [Cinco Secciones Principales](#cinco-secciones-principales)
+
 
 ---
 
@@ -29,13 +27,11 @@ La aplicación permite gestionar un catálogo de productos (create, read, update
 La aplicación incluye:
 
 - `Autenticación` con JWT (registro, login, perfil) y control de roles (USER, ADMIN)
-- CRUD de tareas con validaciones, filtros y paginación
+- CRUD de productos con validaciones, filtros y paginación
 - Documentación interactiva con `Swagger`
-- Pruebas unitarias y E2E con `Jest y Supertest`
-- Emisión de eventos en tiempo real vía `WebSockets` cuando se crea o actualiza una tarea
+- Flujo de compra de prodcutos de pago e integracion con stripe
 - `Upload de archivos`: Se utiliza Multer para adjuntar imágenes a las tareas
 - `Docker Compose`: Configuración para levantar backend, frontend y PostgreSQL en contenedores
-
 
 
 ---
@@ -43,7 +39,7 @@ La aplicación incluye:
 ## Stack tecnológico
 
 * **Frontend**: React 18, Vite, TypeScript, Tailwind CSS, Framer Motion, React Router v6
-* **Backend**: NestJS 9, TypeScript, TypeORM, PostgreSQL
+* **Backend**: NestJS 9, TypeScript, TypeORM, PostgreSQL, Swagger
 * **Autenticación**: JWT (Passport)
 * **Pagos**: Stripe SDK & Stripe CLI (webhooks)
 * **Almacenamiento de archivos**: ServeStatic (local) o AWS S3
@@ -55,16 +51,16 @@ La aplicación incluye:
 ## Arquitectura de la aplicación
 
 1. **Frontend** (SPA) consume la API REST del backend.
-2. **Backend** expone endpoints bajo prefijo `/api`:
+2. **Backend** expone endpoints:
 
-   * Gestión de productos `/api/productos`
-   * Carrito `/api/carrito`
-   * Pasarela de pago `/api/pagos`
-   * Webhook `/api/webhook`
-3. **Stripe CLI** en Docker redirige eventos a `/api/webhook` para actualizar estados.
+   * Autenticacion y creacion de usuarios: `/users` y `/auth/login`
+   * Gestión de productos y subida de archivos `/productos` y `/files`
+   * Carrito `/carrito`
+   * Pasarela de pago `/pagos`
+
 4. **Base de datos** PostgreSQL guarda usuarios, productos, carritos y pagos.
-5. **Uploads**: imágenes de productos se guardan en carpeta `uploads` y se sirven estáticamente en `/api/uploads`.
-
+5. **Uploads**: imágenes de productos se guardan en carpeta `uploads` y se sirven estáticamente en `/uploads`.
+5. **Documentación swagger**: Documentacion de la la api en `/docs`.
 ---
 
 ## Estructura del repositorio
@@ -80,8 +76,8 @@ La aplicación incluye:
 │   ├── nginx.conf               # Config para container estático
 │   ├── .env                     # Variables de entorno Vite
 │   └── package.json
-├── Dockerfile.back              # Dockerfile único en root para back
-├── Dockerfile.front             # Dockerfile único en root para front
+├── Dockerfile.back              # Dockerfile único en root para 
+├── Dockerfile.front             # Dockerfile único en root para 
 ├── docker-compose.yml
 └── README.md                    # Esta documentación
 ```
@@ -92,45 +88,14 @@ La aplicación incluye:
 
 Antes de ejecutar la aplicación, debes generar tus archivos de entorno a partir de los ejemplos incluidos:
 
-1. **Backend**
+**Frontend/Backend**
 
    ```bash
-   cd back
-   cp .env.example .env
+   cp back/.env.example back/.env
+   cp front/.env.example front/.env
    ```
 
-   Luego abre `back/.env` y ajusta las variables.
-
-2. **Frontend**
-
-   ```bash
-   cd front
-   cp .env.example .env
-   ```
-
-   Abre `front/.env` y define:
-
-   ```env
-   # URL base de la API (debe incluir el prefijo /api)
-   VITE_BACKEND_URL=http://localhost:3000/api
-   ```
-
-3. **Docker Compose (opcional)**
-
-   Si usas variables en el *root* para Docker Compose, crea el archivo:
-
-   ```bash
-   cp .env.example .env
-   ```
-
-   en la raíz del proyecto (junto a `docker-compose.yml`), y luego agrega:
-
-   ```env
-   STRIPE_SECRET_KEY=sk_test_xxx
-   STRIPE_WEBHOOK_SECRET=whsec_xxx
-   ```
-
-   Docker Compose cargará automáticamente este `.env` de nivel superior.
+   Luego abre `back/.env` o `front/.env` y ajusta las variables.
 
 ---
 
@@ -144,7 +109,7 @@ npm install
 npm run start:dev
 ```
 
-Accede a `http://localhost:3000/api` y Swagger en `/api/docs`.
+Accede a `http://localhost:3000` y Swagger en `/docs`.
 
 ### Frontend
 
@@ -174,36 +139,7 @@ docker-compose up --build
 
 ---
 
-## Detalles de la API
-
-### Productos
-
-* `GET /api/productos`
-* `POST /api/productos`
-* `GET /api/productos/:id`
-* `PATCH /api/productos/:id`
-* `DELETE /api/productos/:id`
-
-### Carrito
-
-* `GET /api/carrito/getActiveCart`
-* `POST /api/carrito/add`
-* `DELETE /api/carrito/remove/:itemId`
-
-### Pagos (Checkout)
-
-* `POST /api/pagos/create-session` → devuelve `url` para redirigir a Stripe Checkout.
-
-### Webhook Stripe
-
-* `POST /api/webhook` (público)
-
-  * Verifica firma con `STRIPE_WEBHOOK_SECRET`.
-  * Procesa eventos de pago y actualiza carrito.
-
----
-
-## Flujo de General de la app
+## Flujo general de la app
 
 1. **Login y registro de usuario**  
    ![Login](assets/login.gif)
@@ -226,7 +162,22 @@ docker-compose up --build
    1. Usuario confirma compra → `createPaymentSession` → obtiene URL de Stripe.  
    2. Front redirige a Stripe Checkout.  
    3. Stripe emite evento `checkout.session.completed`, etc.  
-   4. Stripe CLI (Docker) escucha y reenvía a `/api/webhook`.  
+   4. Stripe CLI (Docker) escucha y reenvía a `/webhook`.  
    5. Backend valida firma y actualiza el estado del carrito.
+
+---
+
+
+## Cinco Secciones Principales
+
+La interfaz del usuario está organizada en cinco pantallas o secciones clave:
+
+| Sección  | Descripción                                                                                         |
+| -------- | --------------------------------------------------------------------------------------------------- |
+| **Crear**    | CRUD de productos: formulario para **crear**, **editar** y **eliminar** productos del catálogo.      |
+| **Ver**      | Listado de productos con filtros y paginación: permite explorar visualmente todos los productos.   |
+| **Detalle**  | Página de detalle de producto: muestra toda la información, imágenes y opciones de compra.         |
+| **Carrito**  | Vista del carrito activo: permite ver los ítems añadidos, ajustar cantidades y eliminar artículos. |
+| **Pagos**    | Gestión de órdenes de pago: muestra todos los carritos convertidos en órdenes y su estado actual.  |
 
 ---

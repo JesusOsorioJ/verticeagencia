@@ -23,8 +23,8 @@ services:
       DB_USERNAME: myuser
       DB_PASSWORD: mypassword
       DB_NAME: mydb
-      STRIPE_API_KEY: sk_test...
-      STRIPE_WEBHOOK_SECRET: whsec...
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
     env_file:
       - ./back/.env
     depends_on:
@@ -50,7 +50,7 @@ services:
       - ./back/.env
     command:
       - listen
-      - --api-key=sk_test_...
+      - --api-key=${STRIPE_SECRET_KEY}
       - --forward-to=http://backend:3000/pagos/webhook
     depends_on:
       - backend
