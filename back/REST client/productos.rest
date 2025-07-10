@@ -1,0 +1,20 @@
+@baseUrl = http://localhost:3001
+@token = Bearer 
+
+### Crear nuevo producto
+Post {{baseUrl}}/productos
+Authorization: {{token}}
+Content-Type: application/json
+
+{
+    "name": "sal",
+    "price": 10,
+    "description": "sal roa"
+}
+
+### Obtener todos los productos
+GET {{baseUrl}}/productos
+Authorization: {{token}}
+Content-Type: application/json
+
+
