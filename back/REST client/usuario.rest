@@ -1,0 +1,13 @@
+@baseUrl = http://localhost:3000
+@token = Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJndWVzdCI6dHJ1ZSwiaWF0IjoxNzQ5NTA2ODA5LCJleHAiOjE3NDk1MTg4MDl9.eMxaP_G2OXdcH07wl52bHlT00ztArFMuU6uOwIMWcoI
+
+### 1. Crear User
+POST {{baseUrl}}/users
+Authorization: {{token}}
+Content-Type: application/json
+
+{
+  "email": "admin42@admin.com",
+  "password": "password"
+}
+

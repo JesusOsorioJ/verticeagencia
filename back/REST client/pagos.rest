@@ -1,0 +1,13 @@
+@baseUrl = http://localhost:3001
+@token = Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjAwZGNhOTkxLTA5YzctNDFhOC04NjE4LTEzZDRlNWMwZjgxYiIsImVtYWlsIjoiZXhhbXBsZUBleGFtcGxlLmNvbSIsImlhdCI6MTc1MjExMTE3OSwiZXhwIjoxNzUyMTIzMTc5fQ.lXDwBSCqeapz1xSvnqPZtXzK4xJWVoZXKVzdheI6ts0
+
+### Crear sesión de suscripción
+Post {{baseUrl}}/pagos/create-payment-session
+Authorization: {{token}}
+Content-Type: application/json
+
+### Crear sesión de suscripción
+Post http://localhost:3000/pagos/webhook
+Authorization: {{token}}
+Content-Type: application/json
+

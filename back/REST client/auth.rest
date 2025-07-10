@@ -1,0 +1,20 @@
+@baseUrl = http://localhost:3000/
+@token = Bearer <JWT_AQUÍ>
+
+### 1. Confirmar correo
+GET {{baseUrl}}/docs
+
+
+### 2. Login y obtener token JWT (identifier puede ser email o user_name)
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "identifier": "admin42@admin.com",
+  "password": "password"
+}
+
+### 3. Obtener perfil del usuario logueado (requiere token JWT)
+GET {{baseUrl}}/auth/profile
+Authorization: {{token}}
+

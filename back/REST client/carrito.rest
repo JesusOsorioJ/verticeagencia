@@ -1,0 +1,29 @@
+@baseUrl = http://localhost:3001
+@token = Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjJhMzczN2QxLThiNzgtNDBlOS1hNmE2LTcyNGIyNTAzZDZjNyIsImVtYWlsIjoiYWRtaW5AY2NibS5jb20iLCJyb2wiOiJhZG1pbiIsIm5hbWUiOiJBZG1pbiIsImxhc3RfbmFtZSI6IlVzZXIiLCJ1c2VyX25hbWUiOiJhZG1pbiIsImlzRW1haWxDb25maXJtZWQiOmZhbHNlLCJpYXQiOjE3NDg1MjYwNjMsImV4cCI6MTc0ODUzODA2M30.O3V9X7W3O_SGvvxRwOqERUn7RHQYRa_WvqrTH5JAOHY
+
+### Crear sesión de suscripción
+Post {{baseUrl}}/carrito
+Authorization: {{token}}
+Content-Type: application/json
+
+{
+    "productId" : "026683b7-a403-4b2d-b167-662769562794",
+    "quantity": 6
+}
+
+### Obtener todos los pagos
+GET {{baseUrl}}/carrito?relations=true
+Authorization: {{token}}
+Content-Type: application/json
+
+
+###
+Delete {{baseUrl}}/carrito/hardDelete/f4e7dbf2-eaf3-43f1-a99e-3f4b0f36b908
+Authorization: {{token}}
+Content-Type: application/json
+
+
+### Obtener pago con pasarela
+POST {{baseUrl}}/pagos/create-payment-session
+Authorization: {{token}}
+Content-Type: application/json
